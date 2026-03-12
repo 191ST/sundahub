@@ -489,3 +489,1010 @@ end)
 print("BELEGUG HUB Loaded Successfully!")
 print("Blink: Down 3 studs, Forward 5 studs")
 print("Auto Aim Distance: Adjustable 10-200 studs")
+--[[
+    BELEGUG HUB - ULTIMATE EDITION
+    Fitur: Blink, Auto Aim, Kill Aura, Auto Nembak
+    Kill Aura Distance: 60 studs max
+]]
+
+-- Service yang diperlukan
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+-- Variables
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local camera = workspace.CurrentCamera
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "BelegugHub"
+gui.Parent = CoreGui
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 350, 0, 400)
+mainFrame.Position = UDim2.new(0, 50, 0, 50)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = gui
+
+-- Drop Shadow
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Size = UDim2.new(1, 20, 1, 20)
+shadow.Position = UDim2.new(0, -10, 0, -10)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+shadow.ImageTransparency = 0.5
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+shadow.Parent = mainFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "BELEGUG HUB ULTIMATE"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleBar
+
+-- Minimize Button
+local minimizeBtn = Instance.new("ImageButton")
+minimizeBtn.Name = "MinimizeBtn"
+minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 5)
+minimizeBtn.BackgroundTransparency = 1
+minimizeBtn.Image = "rbxassetid://6031068425"
+minimizeBtn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Parent = titleBar
+
+-- Container untuk konten
+local contentContainer = Instance.new("ScrollingFrame")
+contentContainer.Name = "ContentContainer"
+contentContainer.Size = UDim2.new(1, 0, 1, -35)
+contentContainer.Position = UDim2.new(0, 0, 0, 35)
+contentContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+contentContainer.BorderSizePixel = 0
+contentContainer.CanvasSize = UDim2.new(0, 0, 0, 580)
+contentContainer.ScrollBarThickness = 5
+contentContainer.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+contentContainer.Parent = mainFrame
+
+-- Line pembatas atas
+local topLine = Instance.new("Frame")
+topLine.Name = "TopLine"
+topLine.Size = UDim2.new(1, 0, 0, 2)
+topLine.Position = UDim2.new(0, 0, 0, 0)
+topLine.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+topLine.BorderSizePixel = 0
+topLine.Parent = contentContainer
+
+-- ==================================================
+-- BLINK SECTION
+-- ==================================================
+local blinkSection = Instance.new("Frame")
+blinkSection.Name = "BlinkSection"
+blinkSection.Size = UDim2.new(1, -20, 0, 110)
+blinkSection.Position = UDim2.new(0, 10, 0, 10)
+blinkSection.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+blinkSection.BorderSizePixel = 0
+blinkSection.Parent = contentContainer
+
+-- Blink Title
+local blinkTitle = Instance.new("TextLabel")
+blinkTitle.Name = "BlinkTitle"
+blinkTitle.Size = UDim2.new(1, -10, 0, 20)
+blinkTitle.Position = UDim2.new(0, 5, 0, 5)
+blinkTitle.BackgroundTransparency = 1
+blinkTitle.Text = "⚡ BLINK CONTROLS"
+blinkTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
+blinkTitle.TextScaled = true
+blinkTitle.Font = Enum.Font.GothamBold
+blinkTitle.TextXAlignment = Enum.TextXAlignment.Left
+blinkTitle.Parent = blinkSection
+
+-- Blink Down Button
+local blinkDownBtn = Instance.new("TextButton")
+blinkDownBtn.Name = "BlinkDownBtn"
+blinkDownBtn.Size = UDim2.new(0, 100, 0, 35)
+blinkDownBtn.Position = UDim2.new(0, 10, 0, 30)
+blinkDownBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+blinkDownBtn.Text = "⬇️ Blink Down 3"
+blinkDownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+blinkDownBtn.TextScaled = true
+blinkDownBtn.Font = Enum.Font.GothamBold
+blinkDownBtn.BorderSizePixel = 0
+blinkDownBtn.Parent = blinkSection
+
+-- Blink Forward Button
+local blinkForwardBtn = Instance.new("TextButton")
+blinkForwardBtn.Name = "BlinkForwardBtn"
+blinkForwardBtn.Size = UDim2.new(0, 110, 0, 35)
+blinkForwardBtn.Position = UDim2.new(0, 120, 0, 30)
+blinkForwardBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+blinkForwardBtn.Text = "⬆️ Blink Fwd 5"
+blinkForwardBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+blinkForwardBtn.TextScaled = true
+blinkForwardBtn.Font = Enum.Font.GothamBold
+blinkForwardBtn.BorderSizePixel = 0
+blinkForwardBtn.Parent = blinkSection
+
+-- Blink Down 5 Button
+local blinkDown5Btn = Instance.new("TextButton")
+blinkDown5Btn.Name = "BlinkDown5Btn"
+blinkDown5Btn.Size = UDim2.new(0, 100, 0, 35)
+blinkDown5Btn.Position = UDim2.new(0, 240, 0, 30)
+blinkDown5Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+blinkDown5Btn.Text = "⬇️ Down 5"
+blinkDown5Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+blinkDown5Btn.TextScaled = true
+blinkDown5Btn.Font = Enum.Font.GothamBold
+blinkDown5Btn.BorderSizePixel = 0
+blinkDown5Btn.Parent = blinkSection
+
+-- Blink Cooldown Indicator
+local blinkCooldown = Instance.new("TextLabel")
+blinkCooldown.Name = "BlinkCooldown"
+blinkCooldown.Size = UDim2.new(1, -20, 0, 20)
+blinkCooldown.Position = UDim2.new(0, 10, 0, 75)
+blinkCooldown.BackgroundTransparency = 1
+blinkCooldown.Text = "✅ Ready"
+blinkCooldown.TextColor3 = Color3.fromRGB(0, 255, 0)
+blinkCooldown.TextScaled = true
+blinkCooldown.Font = Enum.Font.Gotham
+blinkCooldown.TextXAlignment = Enum.TextXAlignment.Left
+blinkCooldown.Parent = blinkSection
+
+-- ==================================================
+-- AUTO AIM SECTION
+-- ==================================================
+local aimSection = Instance.new("Frame")
+aimSection.Name = "AimSection"
+aimSection.Size = UDim2.new(1, -20, 0, 120)
+aimSection.Position = UDim2.new(0, 10, 0, 130)
+aimSection.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+aimSection.BorderSizePixel = 0
+aimSection.Parent = contentContainer
+
+-- Aim Title
+local aimTitle = Instance.new("TextLabel")
+aimTitle.Name = "AimTitle"
+aimTitle.Size = UDim2.new(1, -10, 0, 20)
+aimTitle.Position = UDim2.new(0, 5, 0, 5)
+aimTitle.BackgroundTransparency = 1
+aimTitle.Text = "🎯 AUTO AIM CONTROLS"
+aimTitle.TextColor3 = Color3.fromRGB(255, 70, 70)
+aimTitle.TextScaled = true
+aimTitle.Font = Enum.Font.GothamBold
+aimTitle.TextXAlignment = Enum.TextXAlignment.Left
+aimTitle.Parent = aimSection
+
+-- Toggle Auto Aim
+local aimToggle = Instance.new("TextButton")
+aimToggle.Name = "AimToggle"
+aimToggle.Size = UDim2.new(0, 80, 0, 30)
+aimToggle.Position = UDim2.new(0, 10, 0, 30)
+aimToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+aimToggle.Text = "OFF"
+aimToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+aimToggle.TextScaled = true
+aimToggle.Font = Enum.Font.GothamBold
+aimToggle.BorderSizePixel = 0
+aimToggle.Parent = aimSection
+
+-- Status Text
+local aimStatus = Instance.new("TextLabel")
+aimStatus.Name = "AimStatus"
+aimStatus.Size = UDim2.new(0, 150, 0, 30)
+aimStatus.Position = UDim2.new(0, 100, 0, 30)
+aimStatus.BackgroundTransparency = 1
+aimStatus.Text = "Status: Disabled"
+aimStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+aimStatus.TextScaled = true
+aimStatus.Font = Enum.Font.Gotham
+aimStatus.TextXAlignment = Enum.TextXAlignment.Left
+aimStatus.Parent = aimSection
+
+-- Distance Label
+local distanceLabel = Instance.new("TextLabel")
+distanceLabel.Name = "DistanceLabel"
+distanceLabel.Size = UDim2.new(0, 100, 0, 20)
+distanceLabel.Position = UDim2.new(0, 10, 0, 65)
+distanceLabel.BackgroundTransparency = 1
+distanceLabel.Text = "Distance: 50"
+distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+distanceLabel.TextScaled = true
+distanceLabel.Font = Enum.Font.Gotham
+distanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+distanceLabel.Parent = aimSection
+
+-- Slider Background
+local sliderBg = Instance.new("Frame")
+sliderBg.Name = "SliderBg"
+sliderBg.Size = UDim2.new(0, 200, 0, 5)
+sliderBg.Position = UDim2.new(0, 10, 0, 90)
+sliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+sliderBg.BorderSizePixel = 0
+sliderBg.Parent = aimSection
+
+-- Slider Button
+local sliderBtn = Instance.new("ImageButton")
+sliderBtn.Name = "SliderBtn"
+sliderBtn.Size = UDim2.new(0, 15, 0, 15)
+sliderBtn.Position = UDim2.new(0, 0, 0, -5)
+sliderBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+sliderBtn.BorderSizePixel = 0
+sliderBtn.Image = "rbxassetid://0"
+sliderBtn.Parent = sliderBg
+
+-- Distance Value Display
+local distanceValue = Instance.new("TextLabel")
+distanceValue.Name = "DistanceValue"
+distanceValue.Size = UDim2.new(0, 50, 0, 20)
+distanceValue.Position = UDim2.new(1, -60, 0, 80)
+distanceValue.BackgroundTransparency = 1
+distanceValue.Text = "50"
+distanceValue.TextColor3 = Color3.fromRGB(255, 70, 70)
+distanceValue.TextScaled = true
+distanceValue.Font = Enum.Font.GothamBold
+distanceValue.Parent = aimSection
+
+-- ==================================================
+-- KILL AURA SECTION
+-- ==================================================
+local auraSection = Instance.new("Frame")
+auraSection.Name = "AuraSection"
+auraSection.Size = UDim2.new(1, -20, 0, 160)
+auraSection.Position = UDim2.new(0, 10, 0, 260)
+auraSection.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+auraSection.BorderSizePixel = 0
+auraSection.Parent = contentContainer
+
+-- Aura Title
+local auraTitle = Instance.new("TextLabel")
+auraTitle.Name = "AuraTitle"
+auraTitle.Size = UDim2.new(1, -10, 0, 20)
+auraTitle.Position = UDim2.new(0, 5, 0, 5)
+auraTitle.BackgroundTransparency = 1
+auraTitle.Text = "💀 KILL AURA & AUTO NEMBAK"
+auraTitle.TextColor3 = Color3.fromRGB(255, 50, 50)
+auraTitle.TextScaled = true
+auraTitle.Font = Enum.Font.GothamBold
+auraTitle.TextXAlignment = Enum.TextXAlignment.Left
+auraTitle.Parent = auraSection
+
+-- Toggle Kill Aura
+local auraToggle = Instance.new("TextButton")
+auraToggle.Name = "AuraToggle"
+auraToggle.Size = UDim2.new(0, 100, 0, 35)
+auraToggle.Position = UDim2.new(0, 10, 0, 30)
+auraToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+auraToggle.Text = "KILL AURA OFF"
+auraToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+auraToggle.TextScaled = true
+auraToggle.Font = Enum.Font.GothamBold
+auraToggle.BorderSizePixel = 0
+auraToggle.Parent = auraSection
+
+-- Toggle Auto Shoot
+local autoShootToggle = Instance.new("TextButton")
+autoShootToggle.Name = "AutoShootToggle"
+autoShootToggle.Size = UDim2.new(0, 120, 0, 35)
+autoShootToggle.Position = UDim2.new(0, 120, 0, 30)
+autoShootToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+autoShootToggle.Text = "AUTO NEMBAK OFF"
+autoShootToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+autoShootToggle.TextScaled = true
+autoShootToggle.Font = Enum.Font.GothamBold
+autoShootToggle.BorderSizePixel = 0
+autoShootToggle.Parent = auraSection
+
+-- Aura Radius Display
+local auraRadiusLabel = Instance.new("TextLabel")
+auraRadiusLabel.Name = "AuraRadiusLabel"
+auraRadiusLabel.Size = UDim2.new(0, 150, 0, 20)
+auraRadiusLabel.Position = UDim2.new(0, 10, 0, 75)
+auraRadiusLabel.BackgroundTransparency = 1
+auraRadiusLabel.Text = "Aura Radius: 60 studs"
+auraRadiusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+auraRadiusLabel.TextScaled = true
+auraRadiusLabel.Font = Enum.Font.Gotham
+auraRadiusLabel.TextXAlignment = Enum.TextXAlignment.Left
+auraRadiusLabel.Parent = auraSection
+
+-- Aura Status
+local auraStatus = Instance.new("TextLabel")
+auraStatus.Name = "AuraStatus"
+auraStatus.Size = UDim2.new(1, -20, 0, 20)
+auraStatus.Position = UDim2.new(0, 10, 0, 100)
+auraStatus.BackgroundTransparency = 1
+auraStatus.Text = "Status: Disabled | Targets: 0"
+auraStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+auraStatus.TextScaled = true
+auraStatus.Font = Enum.Font.Gotham
+auraStatus.TextXAlignment = Enum.TextXAlignment.Left
+auraStatus.Parent = auraSection
+
+-- Aura Visual Effect (optional toggle)
+local auraVisualToggle = Instance.new("TextButton")
+auraVisualToggle.Name = "AuraVisualToggle"
+auraVisualToggle.Size = UDim2.new(0, 100, 0, 25)
+auraVisualToggle.Position = UDim2.new(0, 220, 0, 100)
+auraVisualToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+auraVisualToggle.Text = "Visual OFF"
+auraVisualToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+auraVisualToggle.TextScaled = true
+auraVisualToggle.Font = Enum.Font.Gotham
+auraVisualToggle.BorderSizePixel = 0
+auraVisualToggle.Parent = auraSection
+
+-- Info Text
+local auraInfo = Instance.new("TextLabel")
+auraInfo.Name = "AuraInfo"
+auraInfo.Size = UDim2.new(1, -20, 0, 15)
+auraInfo.Position = UDim2.new(0, 10, 0, 135)
+auraInfo.BackgroundTransparency = 1
+auraInfo.Text = "Max distance: 60 studs"
+auraInfo.TextColor3 = Color3.fromRGB(150, 150, 150)
+auraInfo.TextScaled = true
+auraInfo.Font = Enum.Font.Gotham
+auraInfo.TextXAlignment = Enum.TextXAlignment.Left
+auraInfo.Parent = auraSection
+
+-- ==================================================
+-- VARIABLES
+-- ==================================================
+local autoAimEnabled = false
+local aimDistance = 50
+local dragging = false
+local currentTarget = nil
+
+-- Kill Aura Variables
+local killAuraEnabled = false
+local autoShootEnabled = false
+local auraVisualEnabled = false
+local AURA_MAX_DISTANCE = 60
+local auraTargets = {}
+local auraVisualParts = {}
+local lastShootTime = 0
+local SHOOT_COOLDOWN = 0.3 -- Cooldongan nembak biar gak terlalu cepat
+
+-- ==================================================
+-- FUNCTIONS
+-- ==================================================
+
+-- Blink Functions
+local function blinkDown(studs)
+    if rootPart and rootPart.Parent then
+        local newPos = rootPart.Position - Vector3.new(0, studs, 0)
+        
+        -- Cek collision
+        local ray = Ray.new(rootPart.Position, Vector3.new(0, -studs, 0))
+        local hit, position = workspace:FindPartOnRay(ray, character)
+        
+        if hit then
+            newPos = position + Vector3.new(0, 3, 0)
+        end
+        
+        -- Efek blink
+        blinkCooldown.Text = "⏳ Cooldown..."
+        blinkCooldown.TextColor3 = Color3.fromRGB(255, 100, 0)
+        
+        -- Tween untuk efek halus
+        local tween = TweenService:Create(rootPart, 
+            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+            {CFrame = CFrame.new(newPos) * rootPart.CFrame.Rotation}
+        )
+        tween:Play()
+        
+        -- Efek visual
+        local effect = Instance.new("Part")
+        effect.Size = Vector3.new(2, 0.5, 2)
+        effect.Position = newPos
+        effect.BrickColor = BrickColor.new("Really blue")
+        effect.Material = Enum.Material.Neon
+        effect.CanCollide = false
+        effect.Anchored = true
+        effect.Parent = workspace
+        effect.Transparency = 0.5
+        
+        game:GetService("Debris"):AddItem(effect, 0.5)
+        
+        -- Cooldown reset
+        task.wait(1)
+        blinkCooldown.Text = "✅ Ready"
+        blinkCooldown.TextColor3 = Color3.fromRGB(0, 255, 0)
+    end
+end
+
+local function blinkForward(studs)
+    if rootPart and rootPart.Parent then
+        local direction = camera.CFrame.LookVector * studs
+        local newPos = rootPart.Position + direction
+        
+        -- Raycast untuk deteksi dinding
+        local ray = Ray.new(rootPart.Position, direction)
+        local hit, position = workspace:FindPartOnRay(ray, character)
+        
+        if hit then
+            newPos = position - direction.Unit * 2
+        end
+        
+        -- Efek blink
+        blinkCooldown.Text = "⏳ Cooldown..."
+        blinkCooldown.TextColor3 = Color3.fromRGB(255, 100, 0)
+        
+        -- Tween
+        local tween = TweenService:Create(rootPart, 
+            TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+            {CFrame = CFrame.new(newPos) * rootPart.CFrame.Rotation}
+        )
+        tween:Play()
+        
+        -- Efek visual
+        local effect = Instance.new("Part")
+        effect.Size = Vector3.new(2, 2, 2)
+        effect.Position = newPos
+        effect.BrickColor = BrickColor.new("Really blue")
+        effect.Material = Enum.Material.Neon
+        effect.CanCollide = false
+        effect.Anchored = true
+        effect.Parent = workspace
+        effect.Transparency = 0.5
+        effect.Shape = Enum.PartType.Ball
+        
+        game:GetService("Debris"):AddItem(effect, 0.5)
+        
+        -- Cooldown reset
+        task.wait(1)
+        blinkCooldown.Text = "✅ Ready"
+        blinkCooldown.TextColor3 = Color3.fromRGB(0, 255, 0)
+    end
+end
+
+-- Auto Aim Function
+local function getNearestTarget()
+    local nearest = nil
+    local shortestDistance = aimDistance
+    
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local otherChar = otherPlayer.Character
+            if otherChar and otherChar:FindFirstChild("HumanoidRootPart") and otherChar:FindFirstChild("Humanoid") then
+                local humanoid = otherChar.Humanoid
+                if humanoid.Health > 0 then
+                    local otherRoot = otherChar.HumanoidRootPart
+                    local distance = (rootPart.Position - otherRoot.Position).Magnitude
+                    
+                    if distance < shortestDistance then
+                        -- Cek line of sight
+                        local ray = Ray.new(camera.CFrame.Position, (otherRoot.Position - camera.CFrame.Position).Unit * distance)
+                        local hit, pos = workspace:FindPartOnRay(ray, character)
+                        
+                        if not hit or hit:IsDescendantOf(otherChar) then
+                            nearest = otherRoot
+                            shortestDistance = distance
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return nearest
+end
+
+-- ==================================================
+-- KILL AURA FUNCTIONS
+-- ==================================================
+
+-- Function to get all valid targets in aura range
+local function getAuraTargets()
+    local targets = {}
+    auraTargets = {}
+    
+    if not rootPart or not rootPart.Parent then return targets end
+    
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local otherChar = otherPlayer.Character
+            if otherChar and otherChar:FindFirstChild("HumanoidRootPart") and otherChar:FindFirstChild("Humanoid") then
+                local humanoid = otherChar.Humanoid
+                if humanoid.Health > 0 then
+                    local otherRoot = otherChar.HumanoidRootPart
+                    local distance = (rootPart.Position - otherRoot.Position).Magnitude
+                    
+                    if distance <= AURA_MAX_DISTANCE then
+                        table.insert(targets, {
+                            player = otherPlayer,
+                            character = otherChar,
+                            rootPart = otherRoot,
+                            humanoid = humanoid,
+                            distance = distance
+                        })
+                        
+                        table.insert(auraTargets, otherPlayer)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Sort by distance (terdekat dulu)
+    table.sort(targets, function(a, b)
+        return a.distance < b.distance
+    end)
+    
+    return targets
+end
+
+-- Function to damage target (Kill Aura)
+local function damageTarget(target)
+    if not target or not target.humanoid or target.humanoid.Health <= 0 then return end
+    
+    -- Coba berbagai method damage
+    pcall(function()
+        -- Method 1: Langsung set health ke 0
+        target.humanoid.Health = 0
+        
+        -- Method 2: Break joints
+        if target.humanoid:FindFirstChild("BreakJoints") then
+            target.humanoid:BreakJoints()
+        end
+        
+        -- Method 3: Fire takedown event (umum di game2)
+        local args = {
+            [1] = target.character,
+            [2] = "Takedown"
+        }
+        local takedownEvent = ReplicatedStorage:FindFirstChild("Takedown") or 
+                              ReplicatedStorage:FindFirstChild("Damage") or
+                              ReplicatedStorage:FindFirstChild("Hit")
+        if takedownEvent then
+            takedownEvent:FireServer(unpack(args))
+        end
+        
+        -- Method 4: Cari remote yang bisa dipake
+        for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
+            if remote:IsA("RemoteEvent") and remote.Name:lower():find("damage") or 
+               remote.Name:lower():find("hit") or 
+               remote.Name:lower():find("attack") then
+                remote:FireServer(target.character)
+                break
+            end
+        end
+    end)
+    
+    -- Efek visual kill
+    if auraVisualEnabled then
+        local killEffect = Instance.new("Part")
+        killEffect.Size = Vector3.new(3, 3, 3)
+        killEffect.Position = target.rootPart.Position
+        killEffect.BrickColor = BrickColor.new("Really red")
+        killEffect.Material = Enum.Material.Neon
+        killEffect.CanCollide = false
+        killEffect.Anchored = true
+        killEffect.Parent = workspace
+        killEffect.Transparency = 0.3
+        killEffect.Shape = Enum.PartType.Ball
+        
+        game:GetService("Debris"):AddItem(killEffect, 0.3)
+    end
+end
+
+-- Function to auto shoot target
+local function shootTarget(target)
+    if not target or not target.rootPart then return end
+    
+    local currentTime = tick()
+    if currentTime - lastShootTime < SHOOT_COOLDOWN then return end
+    lastShootTime = currentTime
+    
+    -- Simulate mouse click
+    pcall(function()
+        -- Method 1: Virtual click
+        local mouse = player:GetMouse()
+        if mouse then
+            mouse1click() -- Untuk executor yang support
+        end
+        
+        -- Method 2: Cari tool dan activate
+        local tool = character:FindFirstChildOfClass("Tool")
+        if tool then
+            local activateEvent = tool:FindFirstChild("Activate")
+            if activateEvent and activateEvent:IsA("RemoteEvent") then
+                activateEvent:FireServer()
+            else
+                -- Fallback: equip ulang
+                tool.Parent = player.Backpack
+                wait(0.1)
+                tool.Parent = character
+            end
+        end
+        
+        -- Method 3: Cari weapon remote
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Tool") then
+                local remote = child:FindFirstChild("RemoteEvent") or 
+                              child:FindFirstChild("Shoot") or 
+                              child:FindFirstChild("Fire")
+                if remote then
+                    remote:FireServer()
+                end
+            end
+        end
+        
+        -- Method 4: Click detector spam
+        for _, part in ipairs(workspace:GetDescendants()) do
+            if part:IsA("ClickDetector") and part.Parent and part.Parent:IsDescendantOf(target.character) then
+                fireclickdetector(part)
+            end
+        end
+    end)
+    
+    -- Efek visual shoot
+    if auraVisualEnabled then
+        local shootEffect = Instance.new("Part")
+        shootEffect.Size = Vector3.new(0.5, 0.5, 5)
+        shootEffect.Position = rootPart.Position + camera.CFrame.LookVector * 3
+        shootEffect.BrickColor = BrickColor.new("Bright yellow")
+        shootEffect.Material = Enum.Material.Neon
+        shootEffect.CanCollide = false
+        shootEffect.Anchored = true
+        shootEffect.Parent = workspace
+        shootEffect.Transparency = 0.3
+        shootEffect.Orientation = camera.CFrame.Rotation:ToEulerAnglesXYZ()
+        
+        game:GetService("Debris"):AddItem(shootEffect, 0.1)
+    end
+end
+
+-- Function to update aura visual
+local function updateAuraVisual()
+    -- Clean up old visuals
+    for _, part in ipairs(auraVisualParts) do
+        if part and part.Parent then
+            part:Destroy()
+        end
+    end
+    auraVisualParts = {}
+    
+    if not auraVisualEnabled or not killAuraEnabled or not rootPart then return end
+    
+    -- Buat lingkaran aura
+    local points = 20
+    for i = 1, points do
+        local angle = (i / points) * math.pi * 2
+        local x = math.cos(angle) * AURA_MAX_DISTANCE
+        local z = math.sin(angle) * AURA_MAX_DISTANCE
+        
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(0.5, 0.5, 0.5)
+        part.Position = rootPart.Position + Vector3.new(x, 0, z)
+        part.BrickColor = BrickColor.new("Bright red")
+        part.Material = Enum.Material.Neon
+        part.CanCollide = false
+        part.Anchored = true
+        part.Parent = workspace
+        part.Transparency = 0.5
+        
+        table.insert(auraVisualParts, part)
+    end
+    
+    -- Buat garis penghubung ke target
+    for _, target in ipairs(getAuraTargets()) do
+        local linePart = Instance.new("Part")
+        linePart.Size = Vector3.new(0.2, 0.2, target.distance)
+        linePart.Position = rootPart.Position + (target.rootPart.Position - rootPart.Position)/2
+        linePart.CFrame = CFrame.lookAt(linePart.Position, target.rootPart.Position)
+        linePart.BrickColor = BrickColor.new("Really red")
+        linePart.Material = Enum.Material.Neon
+        linePart.CanCollide = false
+        linePart.Anchored = true
+        linePart.Parent = workspace
+        linePart.Transparency = 0.3
+        
+        table.insert(auraVisualParts, linePart)
+    end
+end
+
+-- ==================================================
+-- MAIN LOOP
+-- ==================================================
+
+-- Auto Aim Loop
+RunService.RenderStepped:Connect(function()
+    if autoAimEnabled and rootPart and rootPart.Parent then
+        local target = getNearestTarget()
+        if target then
+            currentTarget = target
+            local targetPos = target.Position
+            camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+            
+            aimStatus.Text = "Status: Targeting"
+            aimStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
+        else
+            currentTarget = nil
+            aimStatus.Text = "Status: No Target"
+            aimStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+        end
+    else
+        aimStatus.Text = "Status: Disabled"
+        aimStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+    end
+end)
+
+-- Kill Aura & Auto Shoot Loop
+RunService.Heartbeat:Connect(function()
+    if (killAuraEnabled or autoShootEnabled) and rootPart and rootPart.Parent then
+        local targets = getAuraTargets()
+        local targetCount = #targets
+        
+        -- Update status
+        local statusText = "Status: "
+        if killAuraEnabled and autoShootEnabled then
+            statusText = statusText .. "Aura+Shoot"
+        elseif killAuraEnabled then
+            statusText = statusText .. "Kill Aura"
+        elseif autoShootEnabled then
+            statusText = statusText .. "Auto Nembak"
+        end
+        statusText = statusText .. " | Targets: " .. targetCount
+        auraStatus.Text = statusText
+        
+        if targetCount > 0 then
+            auraStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+            
+            -- Process each target
+            for _, target in ipairs(targets) do
+                if killAuraEnabled then
+                    damageTarget(target)
+                end
+                
+                if autoShootEnabled then
+                    shootTarget(target)
+                end
+            end
+        else
+            auraStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        
+        -- Update visual
+        if auraVisualEnabled then
+            updateAuraVisual()
+        end
+    else
+        auraStatus.Text = "Status: Disabled | Targets: 0"
+        auraStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+        
+        -- Clean up visuals
+        if not auraVisualEnabled then
+            for _, part in ipairs(auraVisualParts) do
+                if part and part.Parent then
+                    part:Destroy()
+                end
+            end
+            auraVisualParts = {}
+        end
+    end
+end)
+
+-- ==================================================
+-- BUTTON CONNECTIONS
+-- ==================================================
+
+-- Blink Buttons
+blinkDownBtn.MouseButton1Click:Connect(function()
+    blinkDown(3)
+end)
+
+blinkForwardBtn.MouseButton1Click:Connect(function()
+    blinkForward(5)
+end)
+
+blinkDown5Btn.MouseButton1Click:Connect(function()
+    blinkDown(5)
+end)
+
+-- Auto Aim Toggle
+aimToggle.MouseButton1Click:Connect(function()
+    autoAimEnabled = not autoAimEnabled
+    if autoAimEnabled then
+        aimToggle.Text = "ON"
+        aimToggle.BackgroundColor3 = Color3.fromRGB(70, 120, 70)
+        aimToggle.TextColor3 = Color3.fromRGB(150, 255, 150)
+    else
+        aimToggle.Text = "OFF"
+        aimToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        aimToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+-- Kill Aura Toggle
+auraToggle.MouseButton1Click:Connect(function()
+    killAuraEnabled = not killAuraEnabled
+    if killAuraEnabled then
+        auraToggle.Text = "KILL AURA ON"
+        auraToggle.BackgroundColor3 = Color3.fromRGB(120, 70, 70)
+        auraToggle.TextColor3 = Color3.fromRGB(255, 150, 150)
+    else
+        auraToggle.Text = "KILL AURA OFF"
+        auraToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        auraToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+-- Auto Shoot Toggle
+autoShootToggle.MouseButton1Click:Connect(function()
+    autoShootEnabled = not autoShootEnabled
+    if autoShootEnabled then
+        autoShootToggle.Text = "AUTO NEMBAK ON"
+        autoShootToggle.BackgroundColor3 = Color3.fromRGB(120, 70, 70)
+        autoShootToggle.TextColor3 = Color3.fromRGB(255, 150, 150)
+    else
+        autoShootToggle.Text = "AUTO NEMBAK OFF"
+        autoShootToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        autoShootToggle.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+-- Aura Visual Toggle
+auraVisualToggle.MouseButton1Click:Connect(function()
+    auraVisualEnabled = not auraVisualEnabled
+    if auraVisualEnabled then
+        auraVisualToggle.Text = "Visual ON"
+        auraVisualToggle.BackgroundColor3 = Color3.fromRGB(70, 70, 120)
+        auraVisualToggle.TextColor3 = Color3.fromRGB(150, 150, 255)
+        
+        if killAuraEnabled then
+            updateAuraVisual()
+        end
+    else
+        auraVisualToggle.Text = "Visual OFF"
+        auraVisualToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        auraVisualToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+        
+        -- Clean up visuals
+        for _, part in ipairs(auraVisualParts) do
+            if part and part.Parent then
+                part:Destroy()
+            end
+        end
+        auraVisualParts = {}
+    end
+end)
+
+-- ==================================================
+-- SLIDER FUNCTIONALITY
+-- ==================================================
+local function updateDistanceFromSlider()
+    local sliderPos = sliderBtn.AbsolutePosition.X
+    local sliderBgPos = sliderBg.AbsolutePosition.X
+    local sliderWidth = sliderBg.AbsoluteSize.X
+    local relativePos = math.clamp(sliderPos - sliderBgPos, 0, sliderWidth)
+    local percentage = relativePos / sliderWidth
+    
+    aimDistance = math.floor(percentage * 100)
+    aimDistance = math.clamp(aimDistance, 10, 200)
+    
+    distanceLabel.Text = "Distance: " .. aimDistance
+    distanceValue.Text = tostring(aimDistance)
+end
+
+-- Slider dragging
+sliderBtn.MouseButton1Down:Connect(function()
+    dragging = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = UserInputService:GetMouseLocation()
+        local sliderBgPos = sliderBg.AbsolutePosition.X
+        local sliderWidth = sliderBg.AbsoluteSize.X
+        local newX = math.clamp(mousePos.X - sliderBgPos, 0, sliderWidth)
+        
+        sliderBtn.Position = UDim2.new(0, newX - sliderBtn.AbsoluteSize.X/2, 0, -5)
+        updateDistanceFromSlider()
+    end
+end)
+
+-- ==================================================
+-- MINIMIZE FUNCTIONALITY
+-- ==================================================
+local minimized = false
+local originalSize = mainFrame.Size
+local originalContentVisible = true
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    
+    if minimized then
+        mainFrame.Size = UDim2.new(0, 350, 0, 35)
+        contentContainer.Visible = false
+        minimizeBtn.Image = "rbxassetid://6031068435" -- Maximize icon
+    else
+        mainFrame.Size = originalSize
+        contentContainer.Visible = true
+        minimizeBtn.Image = "rbxassetid://6031068425" -- Minimize icon
+    end
+end)
+
+-- ==================================================
+-- CHARACTER RESPAWN HANDLING
+-- ==================================================
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = newChar:WaitForChild("Humanoid")
+    rootPart = newChar:WaitForChild("HumanoidRootPart")
+end)
+
+-- Anti AFK
+player.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    wait(1)
+    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+end)
+
+-- ==================================================
+-- INITIAL SETUP
+-- ==================================================
+print([[
+
+██████╗ ███████╗██╗     ███████╗ ██████╗ ██╗   ██╗ ██████╗ 
+██╔══██╗██╔════╝██║     ██╔════╝██╔════╝ ██║   ██║██╔════╝ 
+██████╔╝█████╗  ██║     █████╗  ██║  ███╗██║   ██║██║  ███╗
+██╔══██╗██╔══╝  ██║     ██╔══╝  ██║   ██║██║   ██║██║   ██║
+██████╔╝███████╗███████╗███████╗╚██████╔╝╚██████╔╝╚██████╔╝
+╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ╚═════╝ 
+                                                           
+██╗  ██╗██╗   ██╗██████╗ 
+██║  ██║██║   ██║██╔══██╗
+███████║██║   ██║██████╔╝
+██╔══██║██║   ██║██╔══██╗
+██║  ██║╚██████╔╝██████╔╝
+╚═╝  ╚═╝ ╚═════╝ ╚═════╝ 
+    
+====================================
+BELEGUG HUB ULTIMATE LOADED!
+====================================
+Fitur Aktif:
+✅ Blink: Down 3 studs, Forward 5 studs, Down 5 studs
+✅ Auto Aim: Adjustable distance 10-200 studs
+✅ Kill Aura: 60 studs radius
+✅ Auto Nembak: Otomatis nembak musuh dalam radius
+✅ Visual Effect: Lihat radius aura
+====================================
+]])
