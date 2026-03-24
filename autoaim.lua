@@ -17,7 +17,7 @@ ScreenGui.Name = "TP_Hub_191"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 
--- Loading Screen (opsional untuk instan TP)
+-- Loading Screen
 local LoadingFrame = Instance.new("Frame")
 LoadingFrame.Parent = ScreenGui
 LoadingFrame.Size = UDim2.new(1,0,1,0)
@@ -270,7 +270,7 @@ AutoSellContent.Visible = false
 AutoSellContent.ScrollBarThickness = 4
 AutoSellContent.CanvasSize = UDim2.new(0,0,0,220)
 
--- TP BUTTONS
+-- ========== TP BUTTONS ==========
 local BtnBahan = Instance.new("TextButton")
 BtnBahan.Parent = TPContent
 BtnBahan.Size = UDim2.new(1,-16,0,60)
@@ -355,7 +355,7 @@ RSDesc.TextXAlignment = Enum.TextXAlignment.Left
 RSDesc.Font = Enum.Font.Gotham
 RSDesc.TextSize = 10
 
--- ========== MS LOOP CONTENT (SAMA PERSIS SEPERTI ORIGINAL) ==========
+-- ========== MS LOOP CONTENT ==========
 local MSLoopTitle = Instance.new("TextLabel")
 MSLoopTitle.Parent = MSLoopContent
 MSLoopTitle.Size = UDim2.new(1,-16,0,25)
@@ -380,7 +380,6 @@ local MSLoopStatusCorner = Instance.new("UICorner")
 MSLoopStatusCorner.Parent = MSLoopStatus
 MSLoopStatusCorner.CornerRadius = UDim.new(0,6)
 
--- INDICATOR
 local BuyIndicatorFrame = Instance.new("Frame")
 BuyIndicatorFrame.Parent = MSLoopContent
 BuyIndicatorFrame.Size = UDim2.new(1,-16,0,130)
@@ -1272,122 +1271,75 @@ end
 -- ========== INSTANT TP FUNCTION (AMAN UNTUK KENDARAAN) ==========
 function instantTeleport(targetCFrame)
     local character = player.Character
-    if not character then
-        warn("Character not found!")
-        return
-    end
+    if not character then return end
     
     local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        warn("HumanoidRootPart not found!")
-        return
+    if not hrp then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    
+    -- Matikan PlatformStand dulu biar karakter bisa gerak setelah TP
+    if humanoid then
+        humanoid.PlatformStand = true
     end
     
-    -- Fungsi untuk mengunci roda kendaraan agar tidak crash
-    local function lockWheels()
-        -- Cari vehicle seat
-        local vehicle = character:FindFirstChildOfClass("VehicleSeat")
-        if vehicle and vehicle:FindFirstChild("Wheels") then
-            for _, wheel in pairs(vehicle.Wheels:GetChildren()) do
-                if wheel:IsA("Part") or wheel:IsA("MeshPart") then
-                    wheel.Anchored = true
-                end
-            end
-        end
-        
-        -- Cari semua part yang mirip roda dan kunci
-        for _, child in pairs(character:GetDescendants()) do
-            if child:IsA("Part") or child:IsA("MeshPart") or child:IsA("CylinderPart") or child:IsA("WedgePart") then
-                if string.find(string.lower(child.Name), "wheel") or 
-                   string.find(string.lower(child.Name), "roda") or
-                   string.find(string.lower(child.Name), "ban") or
-                   string.find(string.lower(child.Name), "tire") then
-                    child.Anchored = true
-                    child.CanCollide = false
-                end
-            end
-        end
-    end
-    
-    -- Fungsi untuk membuka kunci roda
-    local function unlockWheels()
-        local vehicle = character:FindFirstChildOfClass("VehicleSeat")
-        if vehicle and vehicle:FindFirstChild("Wheels") then
-            for _, wheel in pairs(vehicle.Wheels:GetChildren()) do
-                if wheel:IsA("Part") or wheel:IsA("MeshPart") then
-                    wheel.Anchored = false
-                end
-            end
-        end
-        
-        for _, child in pairs(character:GetDescendants()) do
-            if child:IsA("Part") or child:IsA("MeshPart") or child:IsA("CylinderPart") or child:IsA("WedgePart") then
-                if string.find(string.lower(child.Name), "wheel") or 
-                   string.find(string.lower(child.Name), "roda") or
-                   string.find(string.lower(child.Name), "ban") or
-                   string.find(string.lower(child.Name), "tire") then
-                    child.Anchored = false
-                end
-            end
-        end
-    end
-    
-    -- Matikan physics sementara untuk semua part di karakter
+    -- Anchor semua part agar tidak bergerak selama TP
     local anchoredParts = {}
-    for _, child in pairs(character:GetDescendants()) do
-        if child:IsA("BasePart") and child ~= hrp then
-            if not child.Anchored then
-                anchoredParts[child] = child.Anchored
-                child.Anchored = true
+    for _, v in pairs(character:GetDescendants()) do
+        if v:IsA("BasePart") and v ~= hrp then
+            if not v.Anchored then
+                anchoredParts[v] = false
+                v.Anchored = true
             end
         end
     end
     
-    -- Kunci roda kendaraan
-    lockWheels()
-    
-    -- Set custom physical properties ke 0 agar tidak ada physics saat TP
-    local originalProperties = {}
-    for _, child in pairs(character:GetDescendants()) do
-        if child:IsA("BasePart") then
-            originalProperties[child] = child.CustomPhysicalProperties
-            child.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0)
+    -- Hapus semua velocity/body mover yang bisa mengganggu
+    for _, v in pairs(hrp:GetChildren()) do
+        if v:IsA("BodyVelocity") or v:IsA("BodyPosition") or v:IsA("BodyGyro") or v:IsA("BodyAngularVelocity") then
+            v:Destroy()
         end
     end
+    
+    -- Reset velocity
+    hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+    hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
     
     -- Tampilkan loading sebentar
     LoadingFrame.Visible = true
-    LoadingStatus.Text = "TELEPORT INSTAN..."
-    task.wait(0.1)
-    
-    -- Teleport instan
-    hrp.CFrame = targetCFrame
-    
-    -- Tunggu sebentar agar physics stabil
+    LoadingStatus.Text = "TELEPORT..."
     task.wait(0.05)
     
-    -- Kembalikan physics
-    for child, props in pairs(originalProperties) do
-        if child and child.Parent then
-            child.CustomPhysicalProperties = props
-        end
-    end
+    -- Teleport
+    hrp.CFrame = targetCFrame
     
-    -- Buka kunci roda
-    unlockWheels()
+    -- Reset velocity lagi setelah TP
+    task.wait(0.05)
+    hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+    hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
     
-    -- Buka kunci part yang sebelumnya di-anchor
+    -- Kembalikan part ke normal
     for part, wasAnchored in pairs(anchoredParts) do
         if part and part.Parent then
             part.Anchored = wasAnchored
         end
     end
     
+    -- Kembalikan humanoid
+    if humanoid then
+        humanoid.PlatformStand = false
+        task.wait(0.05)
+        -- Force refresh posisi
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        humanoid:MoveTo(targetCFrame.Position)
+    end
+    
     -- Sembunyikan loading
+    task.wait(0.1)
     LoadingFrame.Visible = false
 end
 
--- TP Functions (INSTANT)
+-- TP Functions
 function TP_MS_BAHAN()
     instantTeleport(CFrame.new(521.32,47.79,617.25))
 end
@@ -1415,10 +1367,9 @@ local function blinkAtas()
     BlinkStatus.Text = "⬆️ Blink ke atas 2 studs..."
     BlinkStatus.TextColor3 = Color3.fromRGB(255,255,0)
     
-    local blinkDistance = 2
-    hrp.CFrame = hrp.CFrame * CFrame.new(0, blinkDistance, 0)
+    hrp.CFrame = hrp.CFrame * CFrame.new(0, 2, 0)
     
-    BlinkStatus.Text = "✅ Sudah naik 2 studs! kusuka turun naik"
+    BlinkStatus.Text = "✅ Sudah naik 2 studs!"
     BlinkStatus.TextColor3 = Color3.fromRGB(100,255,100)
 end
 
@@ -1440,10 +1391,9 @@ local function blinkDown()
     BlinkStatus.Text = "⬇️ Blink ke bawah 4 studs..."
     BlinkStatus.TextColor3 = Color3.fromRGB(255,255,0)
     
-    local blinkDistance = 4
-    hrp.CFrame = hrp.CFrame * CFrame.new(0, -blinkDistance, 0)
+    hrp.CFrame = hrp.CFrame * CFrame.new(0, -4, 0)
     
-    BlinkStatus.Text = "✅ Sudah pindah 4 studs ke bawah!"
+    BlinkStatus.Text = "✅ Sudah turun 4 studs!"
     BlinkStatus.TextColor3 = Color3.fromRGB(100,255,100)
 end
 
@@ -1462,12 +1412,11 @@ local function blinkMaju()
         return 
     end
     
-    BlinkStatus.Text = "⬆️ Blink maju 5 studs..."
+    BlinkStatus.Text = "➡️ Blink maju 5 studs..."
     BlinkStatus.TextColor3 = Color3.fromRGB(255,255,0)
     
-    local blinkDistance = 5
     local lookVector = hrp.CFrame.LookVector
-    hrp.CFrame = hrp.CFrame + (lookVector * blinkDistance)
+    hrp.CFrame = hrp.CFrame + (lookVector * 5)
     
     BlinkStatus.Text = "✅ Sudah maju 5 studs!"
     BlinkStatus.TextColor3 = Color3.fromRGB(100,255,100)
@@ -1488,12 +1437,11 @@ local function blinkMundur()
         return 
     end
     
-    BlinkStatus.Text = "⬇️ Blink mundur 5 studs..."
+    BlinkStatus.Text = "⬅️ Blink mundur 5 studs..."
     BlinkStatus.TextColor3 = Color3.fromRGB(255,255,0)
     
-    local blinkDistance = 5
     local lookVector = hrp.CFrame.LookVector
-    hrp.CFrame = hrp.CFrame - (lookVector * blinkDistance)
+    hrp.CFrame = hrp.CFrame - (lookVector * 5)
     
     BlinkStatus.Text = "✅ Sudah mundur 5 studs!"
     BlinkStatus.TextColor3 = Color3.fromRGB(100,255,100)
@@ -1611,8 +1559,7 @@ AutoSellTabBtn.MouseButton1Click:Connect(function()
     MSSafetyTabBtn.TextColor3 = Color3.fromRGB(200,200,200)
     AutoSellTabBtn.TextColor3 = Color3.fromRGB(255,255,255)
     
-    local total = countSellTools()
-    AutoSellInfo.Text = "Tools: " .. total
+    AutoSellInfo.Text = "Tools: " .. countSellTools()
 end)
 
 -- Minimize
@@ -1677,6 +1624,9 @@ task.spawn(function()
         task.wait(2)
         if MSLoopContent.Visible then
             updateBuyIndicators()
+        end
+        if AutoSellContent.Visible then
+            AutoSellInfo.Text = "Tools: " .. countSellTools()
         end
     end
 end)
