@@ -355,7 +355,7 @@ RSDesc.TextXAlignment = Enum.TextXAlignment.Left
 RSDesc.Font = Enum.Font.Gotham
 RSDesc.TextSize = 10
 
--- ========== MS LOOP CONTENT ==========
+-- ========== MS LOOP CONTENT (SINGKAT AGAR TIDAK MELEBIHI BATAS) ==========
 local MSLoopTitle = Instance.new("TextLabel")
 MSLoopTitle.Parent = MSLoopContent
 MSLoopTitle.Size = UDim2.new(1,-16,0,25)
@@ -1268,98 +1268,91 @@ local function startMSLoop()
     end)
 end
 
--- ========== INSTANT TP FUNCTION (AMAN UNTUK KENDARAAN - KENDARAAN IKUT) ==========
+-- ========== INSTANT TP FUNCTION (KENDARAAN IKUT SEMUA) ==========
 function instantTeleport(targetCFrame)
     local character = player.Character
-    if not character then return end
+    if not character then 
+        warn("Character not found!")
+        return 
+    end
     
     local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+    if not hrp then 
+        warn("HumanoidRootPart not found!")
+        return 
+    end
     
-    local humanoid = character:FindFirstChild("Humanoid")
-    
-    -- Simpan semua kendaraan/vehicle yang terhubung dengan karakter
-    local vehicles = {}
+    -- Cari semua kendaraan yang terhubung (mencari root dari vehicle seat)
+    local rootVehicle = nil
     local vehicleSeat = character:FindFirstChildOfClass("VehicleSeat")
     if vehicleSeat then
-        -- Cari seluruh kendaraan yang terhubung
-        local vehicleRoot = vehicleSeat.Parent
-        if vehicleRoot then
-            table.insert(vehicles, vehicleRoot)
-            -- Cari semua part yang termasuk kendaraan
-            for _, v in pairs(vehicleRoot:GetDescendants()) do
-                if v:IsA("BasePart") and v ~= hrp then
-                    table.insert(vehicles, v)
-                end
+        rootVehicle = vehicleSeat.Parent
+    end
+    
+    -- Kumpulkan semua part yang akan dipindahkan
+    local allParts = {}
+    
+    -- Tambahkan semua part dari karakter
+    for _, v in pairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            table.insert(allParts, v)
+        end
+    end
+    
+    -- Tambahkan semua part dari kendaraan jika ada
+    if rootVehicle then
+        for _, v in pairs(rootVehicle:GetDescendants()) do
+            if v:IsA("BasePart") and not table.find(allParts, v) then
+                table.insert(allParts, v)
             end
         end
     end
     
-    -- Matikan physics sementara
+    -- Simpan posisi awal HRP untuk menghitung offset
+    local startPos = hrp.Position
+    local targetPos = targetCFrame.Position
+    local offset = targetPos - startPos
+    
+    -- Tampilkan loading
+    LoadingFrame.Visible = true
+    LoadingStatus.Text = "TELEPORT KENDARAAN..."
+    task.wait(0.05)
+    
+    -- Matikan physics semua part
+    local originalAnchored = {}
+    for _, part in pairs(allParts) do
+        if part and part.Parent then
+            originalAnchored[part] = part.Anchored
+            part.Anchored = true
+            -- Hapus velocity
+            part.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            part.AssemblyAngularVelocity = Vector3.new(0,0,0)
+        end
+    end
+    
+    -- Matikan humanoid state
+    local humanoid = character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.PlatformStand = true
     end
     
-    -- Anchor semua part agar tidak bergerak saat TP
-    local anchoredParts = {}
-    
-    -- Anchor semua part di karakter
-    for _, v in pairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            if not v.Anchored then
-                anchoredParts[v] = false
-                v.Anchored = true
-            else
-                anchoredParts[v] = true
-            end
-        end
-    end
-    
-    -- Anchor semua part kendaraan
-    for _, vehicle in pairs(vehicles) do
-        if vehicle and vehicle:IsA("BasePart") then
-            if not vehicle.Anchored then
-                anchoredParts[vehicle] = false
-                vehicle.Anchored = true
-            end
-        end
-    end
-    
-    -- Hapus semua velocity
-    for _, v in pairs(character:GetDescendants()) do
-        if v:IsA("BodyVelocity") or v:IsA("BodyPosition") or v:IsA("BodyGyro") or v:IsA("BodyAngularVelocity") then
-            v:Destroy()
-        end
-    end
-    
-    -- Reset velocity
-    hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-    hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
-    
-    -- Tampilkan loading
-    LoadingFrame.Visible = true
-    LoadingStatus.Text = "TELEPORT..."
-    task.wait(0.05)
-    
-    -- Hitung offset antara HRP dan posisi target
-    local offset = targetCFrame.Position - hrp.Position
-    
-    -- Teleport HRP
-    hrp.CFrame = targetCFrame
-    
-    -- Teleport semua part kendaraan bersama karakter
-    for part, _ in pairs(anchoredParts) do
-        if part and part.Parent and part ~= hrp then
+    -- Pindahkan semua part dengan offset yang sama
+    for _, part in pairs(allParts) do
+        if part and part.Parent then
             part.CFrame = part.CFrame + offset
         end
     end
     
     -- Reset velocity lagi
-    hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-    hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
+    for _, part in pairs(allParts) do
+        if part and part.Parent then
+            part.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            part.AssemblyAngularVelocity = Vector3.new(0,0,0)
+        end
+    end
     
     -- Kembalikan anchor ke keadaan semula
-    for part, wasAnchored in pairs(anchoredParts) do
+    for part, wasAnchored in pairs(originalAnchored) do
         if part and part.Parent then
             part.Anchored = wasAnchored
         end
@@ -1370,7 +1363,7 @@ function instantTeleport(targetCFrame)
         humanoid.PlatformStand = false
         task.wait(0.05)
         humanoid:ChangeState(Enum.HumanoidStateType.Running)
-        humanoid:MoveTo(targetCFrame.Position)
+        humanoid:MoveTo(targetPos)
     end
     
     -- Sembunyikan loading
