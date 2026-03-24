@@ -1268,7 +1268,7 @@ local function startMSLoop()
     end)
 end
 
--- ========== INSTANT TP FUNCTION (AMAN UNTUK KENDARAAN) ==========
+-- ========== INSTANT TP FUNCTION (AMAN UNTUK KENDARAAN - KENDARAAN IKUT) ==========
 function instantTeleport(targetCFrame)
     local character = player.Character
     if not character then return end
@@ -1278,24 +1278,55 @@ function instantTeleport(targetCFrame)
     
     local humanoid = character:FindFirstChild("Humanoid")
     
-    -- Matikan PlatformStand dulu biar karakter bisa gerak setelah TP
-    if humanoid then
-        humanoid.PlatformStand = true
-    end
-    
-    -- Anchor semua part agar tidak bergerak selama TP
-    local anchoredParts = {}
-    for _, v in pairs(character:GetDescendants()) do
-        if v:IsA("BasePart") and v ~= hrp then
-            if not v.Anchored then
-                anchoredParts[v] = false
-                v.Anchored = true
+    -- Simpan semua kendaraan/vehicle yang terhubung dengan karakter
+    local vehicles = {}
+    local vehicleSeat = character:FindFirstChildOfClass("VehicleSeat")
+    if vehicleSeat then
+        -- Cari seluruh kendaraan yang terhubung
+        local vehicleRoot = vehicleSeat.Parent
+        if vehicleRoot then
+            table.insert(vehicles, vehicleRoot)
+            -- Cari semua part yang termasuk kendaraan
+            for _, v in pairs(vehicleRoot:GetDescendants()) do
+                if v:IsA("BasePart") and v ~= hrp then
+                    table.insert(vehicles, v)
+                end
             end
         end
     end
     
-    -- Hapus semua velocity/body mover yang bisa mengganggu
-    for _, v in pairs(hrp:GetChildren()) do
+    -- Matikan physics sementara
+    if humanoid then
+        humanoid.PlatformStand = true
+    end
+    
+    -- Anchor semua part agar tidak bergerak saat TP
+    local anchoredParts = {}
+    
+    -- Anchor semua part di karakter
+    for _, v in pairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            if not v.Anchored then
+                anchoredParts[v] = false
+                v.Anchored = true
+            else
+                anchoredParts[v] = true
+            end
+        end
+    end
+    
+    -- Anchor semua part kendaraan
+    for _, vehicle in pairs(vehicles) do
+        if vehicle and vehicle:IsA("BasePart") then
+            if not vehicle.Anchored then
+                anchoredParts[vehicle] = false
+                vehicle.Anchored = true
+            end
+        end
+    end
+    
+    -- Hapus semua velocity
+    for _, v in pairs(character:GetDescendants()) do
         if v:IsA("BodyVelocity") or v:IsA("BodyPosition") or v:IsA("BodyGyro") or v:IsA("BodyAngularVelocity") then
             v:Destroy()
         end
@@ -1305,20 +1336,29 @@ function instantTeleport(targetCFrame)
     hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
     hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
     
-    -- Tampilkan loading sebentar
+    -- Tampilkan loading
     LoadingFrame.Visible = true
     LoadingStatus.Text = "TELEPORT..."
     task.wait(0.05)
     
-    -- Teleport
+    -- Hitung offset antara HRP dan posisi target
+    local offset = targetCFrame.Position - hrp.Position
+    
+    -- Teleport HRP
     hrp.CFrame = targetCFrame
     
-    -- Reset velocity lagi setelah TP
-    task.wait(0.05)
+    -- Teleport semua part kendaraan bersama karakter
+    for part, _ in pairs(anchoredParts) do
+        if part and part.Parent and part ~= hrp then
+            part.CFrame = part.CFrame + offset
+        end
+    end
+    
+    -- Reset velocity lagi
     hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
     hrp.AssemblyAngularVelocity = Vector3.new(0,0,0)
     
-    -- Kembalikan part ke normal
+    -- Kembalikan anchor ke keadaan semula
     for part, wasAnchored in pairs(anchoredParts) do
         if part and part.Parent then
             part.Anchored = wasAnchored
@@ -1329,7 +1369,6 @@ function instantTeleport(targetCFrame)
     if humanoid then
         humanoid.PlatformStand = false
         task.wait(0.05)
-        -- Force refresh posisi
         humanoid:ChangeState(Enum.HumanoidStateType.Running)
         humanoid:MoveTo(targetCFrame.Position)
     end
