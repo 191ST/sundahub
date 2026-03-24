@@ -121,7 +121,6 @@ local Frame
 local LoadingFrame
 
 -- LOADING SCREEN BARU
-
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
     ScreenGui.Name = "TP_Hub_191"
